@@ -25,7 +25,7 @@ def connect_db():
 def init_db():
     with closing(connect_db()) as db:
         with app.open_resource('schema.sql') as f:
-            db.cursor().excutescript(f.read())
+            db.cursor().executescript(f.read().decode())
         db.commit()
 
 
@@ -35,18 +35,18 @@ def before_request():
 
 
 @app.teardown_request
-def teardwon_request():
+def teardwon_request(exception):
     g.db.close()
 
 
 @app.route('/')
 def show_entries():
-    cur = g.db.execute('select titile, text from entries order by id desc')
-    entries = [dict(title=row[0], textx=row[1]) for row in cur.fetchall()]
+    cur = g.db.execute('select title, text from entries order by id desc')
+    entries = [dict(title=row[0], text=row[1]) for row in cur.fetchall()]
     return render_template('show_entries.html', entries=entries)
 
 
-@app.route('add', methods=['POST'])
+@app.route('/add', methods=['POST'])
 def add_entry():
     if not session.get('logged_in'): # session['logged_in']
         abort(401)
@@ -69,8 +69,8 @@ def login():
             # session.setattribute('logged_in', True)
 
             flash('You were logged in')
-            return redirect(url_for('show_entires'))
-        return render_template('login.html', error=error)
+            return redirect(url_for('show_entries'))
+    return render_template('login.html', error=error)
 
 
 @app.route('/logout')
