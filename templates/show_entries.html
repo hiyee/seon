@@ -1,19 +1,37 @@
 {% extends "layout.html" %}
 {% block body %}
     {% if session.logged_in %}
+        {% if result.mode == 0 %}
     <form action="{{ url_for('add_entry') }}" method="post" class="add-entry">
+        {% else %}
+    <form action="{{ url_for('edit_entry') }}" method="post" class="add-entry">
+        <input type="hidden" name="id" value="{{ result.id }}">
+        {% endif %}
         <dl>
             <dt>Title:
-            <dd><input type="text" size="30" name="title">
+            <dd><input type="text" size="30" name="title" value="{{ result.origin_title }}">
             <dt>Text:
-            <dd><textarea name="text" rows="5" cols="40"></textarea>
-            <dd><input type="submit" value="Share">
+            <dd><textarea name="text" rows="5" cols="40">{{ result.origin_text }}</textarea>
+            <dd><input type="submit" value="Do">
         </dl>
     </form>
     {% endif %}
     <ul class="entries">
-    {% for entry in entries %}
+    {% for entry in result.entries %}
         <li><h2>{{ entry.title }}</h2>{{ entry.text|safe }}
+
+        <form action="{{ url_for('del_entry') }}" method="post">
+            <input type="hidden" name='id' value="{{ entry.id }}">
+            <input type="submit" value="DEL">
+        </form>
+
+        <form action="{{ url_for('show_entries') }}" method="post">
+            <input type="hidden" name="id" value="{{ entry.id }}">
+            <input type="hidden" name="origin_title" value="{{ entry.title }}">
+            <input type="hidden" name="origin_text" value="{{ entry.text|safe }}">
+            <input type="submit" value="EDIT">
+        </form>
+
     {% else %}
         <li><em>Unbelievalbe. No entries here so far</em>
     {% endfor %}
